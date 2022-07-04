@@ -2,12 +2,27 @@ import { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import {io} from "socket.io-client"
+import { uniqueNamesGenerator, Config, adjectives, colors, animals } from 'unique-names-generator';
+
+
+interface ChatMessage {
+  user: string,
+  message: string
+}
+
+const customConfig: Config = {
+  dictionaries: [adjectives, colors],
+  separator: '-',
+  length: 2,
+};
+
+const shortName: string = uniqueNamesGenerator(customConfig);
+
 
 function App() {
   const [value, setValue] = useState("")
-  const [chatMsg, setChatMsg] = useState<string[]>([])
+  const [chatMsg, setChatMsg] = useState<ChatMessage[]>([])
   const [socket, setSocket] = useState<any>(null)
-  
   useEffect(()=> {
     const socket = io("http://localhost:8080")
     setSocket(socket)
@@ -15,7 +30,7 @@ function App() {
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
-    socket && socket.emit("chatting-message", value)
+    socket && socket.emit("chatting-message", {user: shortName, message: value})
     setValue("")
   }
 
@@ -23,17 +38,17 @@ function App() {
     setValue(e.target.value)
   }
 
-  socket && socket.on("chatting-message", (msg:string) => {
+  socket && socket.on("chatting-message", (obj:ChatMessage) => {
     setChatMsg([
-      ...chatMsg,
-      msg
+      ...chatMsg, 
+      obj
     ])
   })
   
   return (
     <div className="App">
-      {chatMsg && chatMsg.map((msg, index) => (
-        <h1 key={index}>{msg}</h1>
+      {chatMsg && chatMsg.map((obj, index) => (
+        <h1 key={index} className={obj.user === shortName ? "you" : "other"}>{obj.user} {obj.message}</h1>
       ))}
       <form action="" onSubmit={handleSubmit}>
         <input type="text" value={value} onChange={handleChange}/>
