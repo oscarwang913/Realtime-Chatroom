@@ -24,6 +24,10 @@
   align-self: flex-start;
 }
 
+.name {
+  color: red;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
